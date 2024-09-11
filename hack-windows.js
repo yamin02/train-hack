@@ -1,4 +1,6 @@
-const puppeteer = require("puppeteer-core");
+// this is for the windows OS
+
+const puppeteer = require("puppeteer");
 const routes = ["Dhaka", "Chattogram"];
 const date = "15-Sep-2024";
 // const profileInfo = require("./profile.json");
@@ -11,8 +13,7 @@ function delay(ms) {
 (async () => {
   while (true) {
     const browser = await puppeteer.launch({
-      executablePath: "/usr/bin/chromium",
-      headless: true,
+      headless: false,
     });
 
     const page = await browser.newPage();
@@ -73,8 +74,8 @@ function delay(ms) {
         console.log("The Tickets Have been Booked");
 
         if (e.message === "restartLoop") {
-          console.log("Restarting the inner loop...");
-          continue; // Restart the inner while loop
+            console.log("Restarting the inner loop...");
+            continue; // Restart the inner while loop
         }
 
         if (e.message === "noSeat") {
