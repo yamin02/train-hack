@@ -70,7 +70,7 @@ function delay(ms) {
           )
           .then(() => console.log("Successfully reserved 4 seats"));
       } catch (e) {
-        console.log(e);
+       // console.log(e);
         console.log("The Tickets Have been Booked");
 
         if (e.message === "restartLoop") {
