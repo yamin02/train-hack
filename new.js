@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer-core");
 const routes = ["Dhaka", "Chattogram"];
-const date = "15-Sep-2024";
+const date = "20-Oct-2024";
 // const profileInfo = require("./profile.json");
 
 function delay(ms) {
@@ -12,10 +12,12 @@ function delay(ms) {
   while (true) {
     const browser = await puppeteer.launch({
       executablePath: "/usr/bin/chromium",
-      headless: true,
+      headless: false,
     });
 
     const page = await browser.newPage();
+    try{
+    page.setDefaultTimeout(30 * 1000);
     await page
       .goto("https://eticket.railway.gov.bd/login")
       .then(() => page.type("#mobile_number", "01818672900"))
@@ -23,15 +25,19 @@ function delay(ms) {
       .then(() => page.click(".login-form-submit-btn"))
       .then(() => page.waitForSelector(".railway-ticket-search-submit-btn"))
       .then(() => console.log("Login done Successfully"));
+    }catch(e){
+      console.log("something messed up");
+      continue;
+    }  
 
-    const url = `https://eticket.railway.gov.bd/booking/train/search?fromcity=${routes[0]}&tocity=${routes[1]}&doj=${date}&class=SNIGDHA`;
+    const url = `https://eticket.railway.gov.bd/booking/train/search?fromcity=${routes[1]}&tocity=${routes[0]}&doj=${date}&class=S_CHAIR`;
 
     while (true) {
       try {
-        // select the Div not the button selector
-        var selectorBtn = '#search_list_sec > div.container > div > div.col-lg-9.col-md-8.col-sm-12.col-xs-12.px-xs-1 > app-single-trip:nth-child(2) > div > div.trip-collapsible.trip-div.trip-collapsed > div.seat-classes-row.d-flex > div:nth-child(2) > div.seat-availability-box > div.book-now-btn-wrapper.ng-star-inserted' ;
+        // select the Div not the button selector (check with queryselecter )
+        var selectorBtn = '#search_list_sec > div.container > div > div.col-lg-9.col-md-8.col-sm-12.col-xs-12.px-xs-1 > app-single-trip:nth-child(6) > div > div.trip-collapsible.trip-div.trip-collapsed > div.seat-classes-row.d-flex > div.single-seat-class.selected-seat-type.seat-available-wrap.ng-star-inserted > div.seat-availability-box > div.book-now-btn-wrapper.ng-star-inserted' ;
         var page2 = await browser.newPage();
-        page2.setDefaultTimeout(4 * 1000);
+        page2.setDefaultTimeout(30 * 1000);
         await page2
           .goto(url)
           .then(() => page2.waitForSelector(selectorBtn))
@@ -46,27 +52,27 @@ function delay(ms) {
           .then(() => page2.$$(`.btn-seat.seat-available`))
           .then((seatAvailable) => {
             console.log("Available Seats = ", seatAvailable.length);
-            if (seatAvailable.length < 5) {
+            if (seatAvailable.length < 1) {
               throw new Error("noSeat");
             }
             return seatAvailable;
           })
-          .then((seatBtn) =>
-            Promise.all([
-              seatBtn[0]
-                .click()
-                .catch((e) => console.log("This ticket is booked")),
-              seatBtn[1]
-                .click()
-                .catch((e) => console.log("This ticket is booked")),
-              seatBtn[2]
-                .click()
-                .catch((e) => console.log("This ticket is booked")),
-              seatBtn[3]
-                .click()
-                .catch((e) => console.log("This ticket is booked")),
-            ])
-          )
+          .then((seatBtn) => {
+            const numberofSeatsLeft = seatBtn.length; 
+          
+            // Only click the number of available seats
+            const clickPromises = [];
+            for (let i = 0; i < Math.min(numberofSeatsLeft, 4); i++) {
+              clickPromises.push(
+                seatBtn[i]
+                  .click()
+                  .catch((e) => console.log("This ticket is booked"))
+              );
+            }
+          
+            return Promise.all(clickPromises);
+          })
+          
           .then(() => console.log("Successfully reserved 4 seats"));
       } catch (e) {
        // console.log(e);
@@ -78,7 +84,7 @@ function delay(ms) {
         }
 
         if (e.message === "noSeat") {
-          await delay(0.7 * 60 * 1000);
+          await delay(0.1 * 60 * 1000);
           break; // Exit the inner while loop
         }
       }
