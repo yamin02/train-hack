@@ -19,8 +19,8 @@ function delay(ms) {
     const page = await browser.newPage();
     await page
       .goto("https://eticket.railway.gov.bd/login")
-      .then(() => page.type("#mobile_number", "01818672900"))
-      .then(() => page.type("#password", "chandanpura"))
+      .then(() => page.type("#mobile_number", "[]"))
+      .then(() => page.type("#password", "[]"))
       .then(() => page.click(".login-form-submit-btn"))
       .then(() => page.waitForSelector(".railway-ticket-search-submit-btn"))
       .then(() => console.log("Login done Successfully"));
